@@ -5,19 +5,22 @@ let preventAutoLikeKeys = new Set();
 function findAndClickLikeButton(forceToggle = false) {
   if (!forceToggle && preventAutoLikeKeys.size > 0) return;
   
-  const likeButton = document.querySelector('button[aria-label="Like"]');
-  const unlikeButton = document.querySelector('button[aria-label="Unlike"]');
-  const button = likeButton || unlikeButton;
-  if (!button) return;
+  const likeButtonRenderer = document.querySelector('ytmusic-like-button-renderer');
+  if (!likeButtonRenderer) return;
+  
+  const likeStatus = likeButtonRenderer.getAttribute('like-status');
+  const isAlreadyLiked = likeStatus === 'LIKE';
+  
+  if (!forceToggle && isAlreadyLiked) return;
+
+  const likeButton = likeButtonRenderer.querySelector('button[aria-label="Like"]');
+  if (!likeButton) return;
 
   const now = Date.now();
   if (now - lastClickTime < CLICK_COOLDOWN) return;
 
-  const isAlreadyLiked = !!unlikeButton;
-  if (forceToggle || !isAlreadyLiked) {
-    button.click();
-    lastClickTime = now;
-  }
+  likeButton.click();
+  lastClickTime = now;
 }
 
 function findAndClickDislikeButton(forceToggle = false) {
@@ -132,8 +135,11 @@ function hideTooltip() {
 }
 
 function scheduleAutoLike() {
-  const unlikeButton = document.querySelector('button[aria-label="Unlike"]');
-  if (unlikeButton) {
+  const likeButtonRenderer = document.querySelector('ytmusic-like-button-renderer');
+  if (!likeButtonRenderer) return;
+  
+  const likeStatus = likeButtonRenderer.getAttribute('like-status');
+  if (likeStatus === 'LIKE') {
     return;
   }
   
