@@ -1,193 +1,168 @@
 let lastClickTime = 0;
-const CLICK_COOLDOWN = 1000; // 1 second cooldown between clicks
-let preventAutoLikeKeys = new Set(); // Track keys that prevent auto-like: n, x, s, ArrowDown
-let modifierKeysHeld = { meta: false, ctrl: false, alt: false, shift: false };
+const CLICK_COOLDOWN = 1000;
+let preventAutoLikeKeys = new Set();
 
 function findAndClickLikeButton(forceToggle = false) {
-  // Don't auto-like if prevent keys are being held (unless forcing toggle)
-  if (!forceToggle && preventAutoLikeKeys.size > 0) {
-    return;
-  }
+  if (!forceToggle && preventAutoLikeKeys.size > 0) return;
   
-  // Don't auto-like if any modifier keys are held (SUPER, Ctrl, Alt, Shift)
-  if (!forceToggle && (modifierKeysHeld.meta || modifierKeysHeld.ctrl || modifierKeysHeld.alt || modifierKeysHeld.shift)) {
-    return;
-  }
-
   const likeButton = document.querySelector('button[aria-label="Like"]');
-  
-  if (likeButton) {
-    const now = Date.now();
-    // Only click if enough time has passed since last click
-    if (now - lastClickTime >= CLICK_COOLDOWN) {
-      // Check if button is not already liked (aria-pressed might be "true" if already liked)
-      const isAlreadyLiked = likeButton.getAttribute('aria-pressed') === 'true' || 
-                             likeButton.classList.contains('liked') ||
-                             likeButton.getAttribute('aria-label') === 'Unlike';
-      
-      // If forcing toggle (manual action), always click to allow undoing dislike
-      // Otherwise, only click if not already liked
-      if (forceToggle || !isAlreadyLiked) {
-        likeButton.click();
-        lastClickTime = now;
-        console.log(forceToggle ? 'Liked/undisliked song' : 'Auto-liked song');
-      }
-    }
+  if (!likeButton) return;
+
+  const now = Date.now();
+  if (now - lastClickTime < CLICK_COOLDOWN) return;
+
+  const isAlreadyLiked = likeButton.getAttribute('aria-label') === 'Unlike';
+  if (forceToggle || !isAlreadyLiked) {
+    likeButton.click();
+    lastClickTime = now;
   }
 }
 
 function findAndClickDislikeButton(forceToggle = false) {
   const dislikeButton = document.querySelector('button[aria-label="Dislike"], button[aria-label="Unlike"]');
-  
-  if (dislikeButton) {
-    const now = Date.now();
-    if (now - lastClickTime >= CLICK_COOLDOWN) {
-      const isAlreadyDisliked = dislikeButton.getAttribute('aria-pressed') === 'true' || 
-                                dislikeButton.classList.contains('disliked') ||
-                                dislikeButton.getAttribute('aria-label') === 'Like';
-      
-      // If forcing toggle (manual action), always click to allow undoing like
-      // Otherwise, only click if not already disliked
-      if (forceToggle || !isAlreadyDisliked) {
-        dislikeButton.click();
-        lastClickTime = now;
-        console.log(forceToggle ? 'Disliked/unliked song' : 'Disliked song');
-      }
-    }
+  if (!dislikeButton) return;
+
+  const now = Date.now();
+  if (now - lastClickTime < CLICK_COOLDOWN) return;
+
+  const isAlreadyDisliked = dislikeButton.getAttribute('aria-label') === 'Like';
+  if (forceToggle || !isAlreadyDisliked) {
+    dislikeButton.click();
+    lastClickTime = now;
   }
 }
 
 function undoLastAction() {
-  // Try to find and click the opposite button to undo
-  // First check if there's a dislike button (to undo a dislike)
   const dislikeButton = document.querySelector('button[aria-label="Dislike"], button[aria-label="Unlike"]');
   const likeButton = document.querySelector('button[aria-label="Like"]');
   
   const now = Date.now();
-  if (now - lastClickTime >= CLICK_COOLDOWN) {
-    // If there's a dislike button visible, clicking like will undo dislike
-    // If there's a like button visible, clicking dislike will undo like
-    if (dislikeButton && likeButton) {
-      // Check which state we're in
-      const isDisliked = dislikeButton.getAttribute('aria-pressed') === 'true' || 
-                        dislikeButton.classList.contains('disliked');
-      const isLiked = likeButton.getAttribute('aria-pressed') === 'true' || 
-                     likeButton.classList.contains('liked') ||
-                     likeButton.getAttribute('aria-label') === 'Unlike';
-      
-      if (isDisliked) {
-        likeButton.click();
-        lastClickTime = now;
-        console.log('Undid dislike - liked song');
-      } else if (isLiked) {
-        dislikeButton.click();
-        lastClickTime = now;
-        console.log('Undid like - disliked song');
-      }
-    } else if (likeButton) {
-      // If only like button exists, try toggling it
-      likeButton.click();
-      lastClickTime = now;
-      console.log('Toggled like state');
-    } else if (dislikeButton) {
-      // If only dislike button exists, try toggling it
-      dislikeButton.click();
-      lastClickTime = now;
-      console.log('Toggled dislike state');
-    }
-  }
+  if (now - lastClickTime < CLICK_COOLDOWN) return;
+
+  if (dislikeButton) dislikeButton.click();
+  else if (likeButton) likeButton.click();
+  lastClickTime = now;
 }
 
-// Track modifier keys and keys that prevent auto-like
 document.addEventListener('keydown', (e) => {
-  const key = e.key;
-  const isSuperHeld = e.metaKey || e.ctrlKey; // metaKey is SUPER on Linux/Mac, ctrlKey as fallback
+  const key = e.key.toLowerCase();
+  const normalizedKey = e.key === 'ArrowDown' ? 'ArrowDown' : key;
+  const isSuperHeld = e.metaKey || e.ctrlKey;
   
-  // Track modifier keys
-  modifierKeysHeld.meta = e.metaKey;
-  modifierKeysHeld.ctrl = e.ctrlKey;
-  modifierKeysHeld.alt = e.altKey;
-  modifierKeysHeld.shift = e.shiftKey;
-  
-  // Keys that prevent auto-like when pressed (without SUPER)
-  if (!isSuperHeld && (key === 'n' || key === 'x' || key === 's' || key === 'ArrowDown')) {
-    preventAutoLikeKeys.add(key);
+  if (!isSuperHeld && (normalizedKey === 'n' || normalizedKey === 'x' || normalizedKey === 's' || normalizedKey === 'ArrowDown')) {
+    preventAutoLikeKeys.add(normalizedKey);
+    hideTooltip();
   }
   
-  // Keyboard shortcuts with SUPER modifier
   if (isSuperHeld) {
-    if (key === 'y' || key === 'ArrowUp') {
+    const originalKey = e.key;
+    if (key === 'y' || originalKey === 'ArrowUp') {
       e.preventDefault();
-      findAndClickLikeButton(true); // Force toggle to allow undoing dislike
-    } else if (key === 'n' || key === 'x' || key === 'ArrowDown') {
+      findAndClickLikeButton(true);
+    } else if (key === 'n' || key === 'x' || originalKey === 'ArrowDown') {
       e.preventDefault();
-      findAndClickDislikeButton(true); // Force toggle to allow undoing like
-    } else if (key === 'u' || key === 'Backspace') {
+      findAndClickDislikeButton(true);
+    } else if (key === 'u' || originalKey === 'Backspace') {
       e.preventDefault();
       undoLastAction();
     }
   }
-});
+}, { capture: true });
 
 document.addEventListener('keyup', (e) => {
-  const key = e.key;
-  
-  // Update modifier keys
-  modifierKeysHeld.meta = e.metaKey;
-  modifierKeysHeld.ctrl = e.ctrlKey;
-  modifierKeysHeld.alt = e.altKey;
-  modifierKeysHeld.shift = e.shiftKey;
-  
-  if (preventAutoLikeKeys.has(key)) {
-    preventAutoLikeKeys.delete(key);
-  }
-});
+  const normalizedKey = e.key === 'ArrowDown' ? 'ArrowDown' : e.key.toLowerCase();
+  preventAutoLikeKeys.delete(normalizedKey);
+}, { capture: true });
 
-// Helper function to check if modifier keys are currently held
-function areModifierKeysHeld() {
-  // We can't directly check modifier keys without an event, so we rely on tracking
-  // But we'll also check on focus events to be safe
-  return modifierKeysHeld.meta || modifierKeysHeld.ctrl || modifierKeysHeld.alt || modifierKeysHeld.shift;
+let autoLikeTimeout = null;
+let countdownInterval = null;
+let tooltipElement = null;
+
+function createTooltip() {
+  if (tooltipElement) return tooltipElement;
+  
+  tooltipElement = document.createElement('div');
+  tooltipElement.id = 'focus-like-tooltip';
+  tooltipElement.style.cssText = `
+    position: fixed;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  `;
+  document.body.appendChild(tooltipElement);
+  return tooltipElement;
 }
 
-// Listen for when page becomes visible (handles tab switching and window focus)
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    // Small delay to ensure page is fully loaded and check modifier keys
-    setTimeout(() => {
-      // Check modifier keys one more time before auto-like
-      // If any are still held (from before tab switch), don't auto-like
-      if (!areModifierKeysHeld()) {
-        findAndClickLikeButton();
-      }
-      // Reset modifier keys after check (for next time)
-      modifierKeysHeld.meta = false;
-      modifierKeysHeld.ctrl = false;
-      modifierKeysHeld.alt = false;
-      modifierKeysHeld.shift = false;
-    }, 500);
-  }
-});
+function showTooltip(secondsRemaining) {
+  const tooltip = createTooltip();
+  tooltip.innerHTML = `
+    <div style="font-weight: 600; margin-bottom: 4px;">Auto-like in ${secondsRemaining}s</div>
+    <div style="font-size: 12px; color: #ccc;">Press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">N</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">X</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">S</kbd>, or <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">↓</kbd> to cancel</div>
+  `;
+  tooltip.style.opacity = '1';
+}
 
-// Listen for window focus events (works when switching between browser windows)
-window.addEventListener('focus', () => {
-  setTimeout(() => {
-    // Check modifier keys one more time before auto-like
-    // If any are still held (from before focus change), don't auto-like
-    if (!areModifierKeysHeld()) {
+function hideTooltip() {
+  if (tooltipElement) {
+    tooltipElement.style.opacity = '0';
+    setTimeout(() => {
+      if (tooltipElement && tooltipElement.style.opacity === '0') {
+        tooltipElement.remove();
+        tooltipElement = null;
+      }
+    }, 200);
+  }
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+}
+
+function scheduleAutoLike() {
+  const likeButton = document.querySelector('button[aria-label="Like"]');
+  if (likeButton && likeButton.getAttribute('aria-label') === 'Unlike') {
+    return;
+  }
+  
+  if (autoLikeTimeout) clearTimeout(autoLikeTimeout);
+  if (countdownInterval) clearInterval(countdownInterval);
+  
+  let secondsRemaining = 5;
+  showTooltip(secondsRemaining);
+  
+  countdownInterval = setInterval(() => {
+    secondsRemaining--;
+    if (secondsRemaining > 0) {
+      showTooltip(secondsRemaining);
+    } else {
+      hideTooltip();
+    }
+  }, 1000);
+  
+  autoLikeTimeout = setTimeout(() => {
+    if (preventAutoLikeKeys.size === 0) {
       findAndClickLikeButton();
     }
-    // Reset modifier keys after check (for next time)
-    modifierKeysHeld.meta = false;
-    modifierKeysHeld.ctrl = false;
-    modifierKeysHeld.alt = false;
-    modifierKeysHeld.shift = false;
-  }, 500);
+    autoLikeTimeout = null;
+    hideTooltip();
+  }, 5000);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) scheduleAutoLike();
 });
 
-// Initial check when content script loads
-setTimeout(() => {
-  findAndClickLikeButton();
-}, 1000);
+window.addEventListener('focus', () => scheduleAutoLike());
 
-
+setTimeout(() => findAndClickLikeButton(), 1000);

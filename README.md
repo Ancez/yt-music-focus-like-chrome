@@ -5,7 +5,7 @@ A Chrome extension that automatically likes YouTube Music songs when the browser
 ## Features
 
 - **Primary**: Automatically clicks the "Like" button when the window gains focus
-- Prevents auto-like when holding 'n', 'x', 's', or Arrow Down
+- Prevents auto-like when clicking 'n', 'x', 's', or Arrow Down after focusing the window
 - Keyboard shortcuts (with SUPER/Windows key):
   - `SUPER + y` or `SUPER + Arrow Up` → Like the song (also undoes dislike)
   - `SUPER + n`, `SUPER + x`, or `SUPER + Arrow Down` → Dislike the song (also undoes like)
@@ -35,8 +35,8 @@ The extension uses a content script that:
 ## Usage
 
 ### Auto-Like on Focus (Primary Feature)
-- Simply switch to the YouTube Music tab/window - the song will be auto-liked
-- Hold 'n', 'x', 's', or Arrow Down while focusing to prevent auto-like
+- Simply switch to the YouTube Music tab/window - the song will be auto-liked after 5 seconds
+- To cancel auto-like: Press and hold 'n', 'x', 's', or Arrow Down within 5 seconds of switching to the tab/window
 
 ### Manual Keyboard Shortcuts
 - `SUPER + y` or `SUPER + Arrow Up` → Manually like the current song (also undoes dislike)
