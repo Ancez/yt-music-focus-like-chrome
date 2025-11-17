@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Music Auto Like on Focus",
+  "version": "1.0.0",
+  "description": "Automatically likes YouTube Music songs when the window is focused by clicking the button with aria-label='Like'",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://music.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
+
