@@ -6,14 +6,16 @@ function findAndClickLikeButton(forceToggle = false) {
   if (!forceToggle && preventAutoLikeKeys.size > 0) return;
   
   const likeButton = document.querySelector('button[aria-label="Like"]');
-  if (!likeButton) return;
+  const unlikeButton = document.querySelector('button[aria-label="Unlike"]');
+  const button = likeButton || unlikeButton;
+  if (!button) return;
 
   const now = Date.now();
   if (now - lastClickTime < CLICK_COOLDOWN) return;
 
-  const isAlreadyLiked = likeButton.getAttribute('aria-label') === 'Unlike';
+  const isAlreadyLiked = !!unlikeButton;
   if (forceToggle || !isAlreadyLiked) {
-    likeButton.click();
+    button.click();
     lastClickTime = now;
   }
 }
@@ -130,8 +132,8 @@ function hideTooltip() {
 }
 
 function scheduleAutoLike() {
-  const likeButton = document.querySelector('button[aria-label="Like"]');
-  if (likeButton && likeButton.getAttribute('aria-label') === 'Unlike') {
+  const unlikeButton = document.querySelector('button[aria-label="Unlike"]');
+  if (unlikeButton) {
     return;
   }
   
