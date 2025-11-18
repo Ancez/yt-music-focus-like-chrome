@@ -54,9 +54,17 @@ document.addEventListener('keydown', (e) => {
   const normalizedKey = e.key === 'ArrowDown' ? 'ArrowDown' : key;
   const isSuperHeld = e.metaKey || e.ctrlKey;
   
-  if (!isSuperHeld && (normalizedKey === 'n' || normalizedKey === 'x' || normalizedKey === 's' || normalizedKey === 'ArrowDown')) {
+  if (!isSuperHeld && (normalizedKey === 'n' || normalizedKey === 'x' || normalizedKey === 's' || normalizedKey === 'ArrowDown' || normalizedKey === 'escape')) {
     preventAutoLikeKeys.add(normalizedKey);
     hideTooltip();
+    if (autoLikeTimeout) {
+      clearTimeout(autoLikeTimeout);
+      autoLikeTimeout = null;
+    }
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
   }
   
   if (isSuperHeld) {
@@ -113,7 +121,7 @@ function showTooltip(secondsRemaining) {
   const tooltip = createTooltip();
   tooltip.innerHTML = `
     <div style="font-weight: 600; margin-bottom: 4px;">Auto-like in ${secondsRemaining}s</div>
-    <div style="font-size: 12px; color: #ccc;">Press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">N</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">X</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">S</kbd>, or <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">↓</kbd> to cancel</div>
+    <div style="font-size: 12px; color: #ccc;">Press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">N</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">X</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">S</kbd>, <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">↓</kbd>, or <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">Esc</kbd> to cancel</div>
   `;
   tooltip.style.opacity = '1';
 }
