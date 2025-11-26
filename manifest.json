@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YouTube Music Auto Like on Focus",
   "version": "1.0.0",
-  "description": "Auto-likes songs when you focus the YouTube Music tab. Cancel with N, X, S, ↓, or Esc. Shortcuts: Cmd/Ctrl+Y/↑ (like), Cmd/Ctrl+N/X/↓ (dislike), Cmd/Ctrl+U/Backspace (undo).",
+  "description": "Auto-likes songs on focus. Cancel: N/X/S/↓/Esc. Shortcuts: Cmd/Ctrl+Y/↑ (like), Cmd/Ctrl+N/X/↓ (dislike), Cmd/Ctrl+U (undo).",
   "content_scripts": [
     {
       "matches": ["*://music.youtube.com/*"],
