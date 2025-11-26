@@ -52,7 +52,7 @@ The extension uses a content script that:
 ## Notes
 
 - The extension only works on YouTube Music (`music.youtube.com`)
-- It only requires the `activeTab` permission
+- No permissions required
 - The extension checks for buttons with the exact aria-label "Like"
 - Designed specifically for YouTube Music
 

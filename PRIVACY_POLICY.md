@@ -17,9 +17,7 @@ The Extension operates entirely locally within your browser and does not:
 
 ## Permissions Used
 
-The Extension requests the following permission:
-
-- **activeTab**: This permission allows the Extension to interact with YouTube Music tabs only when you are actively viewing them. The Extension cannot access tabs you are not currently viewing.
+The Extension does not require any permissions. It uses a content script that runs only on YouTube Music pages.
 
 ## How the Extension Works
 

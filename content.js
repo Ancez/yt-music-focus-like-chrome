@@ -5,7 +5,10 @@ let preventAutoLikeKeys = new Set();
 function findAndClickLikeButton(forceToggle = false) {
   if (!forceToggle && preventAutoLikeKeys.size > 0) return;
   
-  const likeButtonRenderer = document.querySelector('ytmusic-like-button-renderer');
+  const playerBar = document.querySelector('ytmusic-player-bar');
+  if (!playerBar) return;
+
+  const likeButtonRenderer = playerBar.querySelector('ytmusic-like-button-renderer');
   if (!likeButtonRenderer) return;
   
   const likeStatus = likeButtonRenderer.getAttribute('like-status');
